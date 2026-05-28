@@ -115,14 +115,14 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
 
           <text
             x="180"
-            y="44"
+            y="46"
             className="fill-zinc-400 font-sans font-medium text-[18px]"
             textAnchor="middle"
           >
             12
           </text>
           <text
-            x="328"
+            x="324"
             y="186"
             className="fill-zinc-500 font-sans font-medium text-[18px]"
             textAnchor="middle"
@@ -131,14 +131,14 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
           </text>
           <text
             x="180"
-            y="332"
+            y="328"
             className="fill-zinc-500 font-sans font-medium text-[18px]"
             textAnchor="middle"
           >
             6
           </text>
           <text
-            x="32"
+            x="36"
             y="186"
             className="fill-zinc-500 font-sans font-medium text-[18px]"
             textAnchor="middle"
