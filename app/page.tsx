@@ -13,12 +13,6 @@ export default function Home() {
     <div className="flex flex-1 flex-col items-center justify-center p-4 md:p-8 relative bg-grid-glow">
       <div className="w-full max-w-4xl flex flex-col items-center gap-6 z-10">
         <header className="text-center flex flex-col items-center gap-2 max-w-xl">
-          <div className="flex items-center gap-2 border border-zinc-800/80 px-3 py-1 rounded-full bg-zinc-900/40 backdrop-blur-sm">
-            <Clock className="w-4 h-4 text-amber-500" />
-            <span className="font-mono text-[10px] uppercase tracking-wider text-muted">
-              made by keerthi
-            </span>
-          </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
             Tempus &amp; Poesis
@@ -56,7 +50,7 @@ export default function Home() {
               : "border-zinc-800/60",
           )}
         >
-          <AnalogClock isStuttering={isStuttering} />
+          <AnalogClock isStuttering={isStuttering} activePulse={null} />
         </div>
 
         <footer className="text-center text-[10px] font-mono text-zinc-600 flex flex-col sm:flex-row items-center gap-1.5 sm:gap-4">

@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { MorsePulse } from "@/lib/morse";
+import { act, useEffect, useRef, useState } from "react";
 
 interface AnalogClockProps {
   isStuttering: boolean;
+  activePulse: MorsePulse | null;
 }
 
-export default function AnalogClock({ isStuttering }: AnalogClockProps) {
+export default function AnalogClock({
+  isStuttering,
+  activePulse,
+}: AnalogClockProps) {
   const [time, setTime] = useState<Date | null>(null);
 
   const requestRef = useRef<number | null>(null);
@@ -36,8 +41,8 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
       let targetOffset = 0;
       let jitter = 0;
 
-      if (isStuttering) {
-        targetOffset = 14;
+      if (isStuttering && activePulse && activePulse.active) {
+        targetOffset = activePulse.type === "dot" ? 6 : 14;
         jitter = Math.sin(Date.now() * 0.08) * 1.5;
       }
 
@@ -60,7 +65,7 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
         cancelAnimationFrame(requestRef.current);
       }
     };
-  }, [isStuttering]);
+  }, [isStuttering, activePulse]);
 
   if (!time) {
     return (
@@ -164,7 +169,7 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
             {digitalTimeStr}
           </text>
 
-          {isStuttering && (
+          {isStuttering && activePulse?.active && (
             <circle
               cx="180"
               cy="180"
@@ -204,7 +209,7 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
           </g>
 
           <g transform={`rotate(${secondAngleRef.current} 180 180)`}>
-            {isStuttering && (
+            {isStuttering && activePulse?.active && (
               <line
                 x1="180"
                 y1="180"
@@ -221,9 +226,13 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
               x2="180"
               y2="30"
               className={`${
-                isStuttering ? "stroke-amber-500/80" : "stroke-amber-500"
+                isStuttering
+                  ? activePulse?.active
+                    ? "stroke-amber-400"
+                    : "stroke-amber-500/80"
+                  : "stroke-amber-500"
               } transition-colors duration-100`}
-              strokeWidth={isStuttering ? "2.5" : "1.5"}
+              strokeWidth={isStuttering && activePulse?.active ? "2.5" : "1.5"}
               strokeLinecap="round"
             />
 
@@ -244,7 +253,9 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
               cy="30"
               r="2.5"
               className={`${
-                isStuttering ? "fill-white animate-pulse" : "fill-amber-500"
+                isStuttering && activePulse?.active
+                  ? "fill-white animate-pulse"
+                  : "fill-amber-500"
               }`}
             />
           </g>
@@ -260,10 +271,16 @@ export default function AnalogClock({ isStuttering }: AnalogClockProps) {
         </svg>
 
         {isStuttering && (
-            <div className="absolute top-2/3 flex flex-col items-center justify-center">
-                <span className="text-[10px] font-mono text-amber-500/90 tracking-wider">
-                TX ACTIVE:{" "}🐟</span>
-                </div>
+          <div className="absolute top-2/3 flex flex-col items-center justify-center">
+            <span className="text-[10px] font-mono text-amber-500/90 tracking-wider">
+              TX ACTIVE:{" "}
+              {activePulse?.active
+                ? activePulse.type === "dot"
+                  ? "●"
+                  : "▬"
+                : "◌"}
+            </span>
+          </div>
         )}
       </div>
     </div>
