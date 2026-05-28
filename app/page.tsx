@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import AnalogClock from "@/components/analog-clock";
 import { cn } from "@/lib/utils";
-import { Clock, Volume2 } from "lucide-react";
+import { Clock, Info, Volume2 } from "lucide-react";
 import Image from "next/image";
 
 export default function Home() {
@@ -58,6 +58,15 @@ export default function Home() {
         >
           <AnalogClock isStuttering={isStuttering} />
         </div>
+
+        <footer className="text-center text-[10px] font-mono text-zinc-600 flex flex-col sm:flex-row items-center gap-1.5 sm:gap-4">
+          <span>© 2026 Tempus &amp; Poesis</span>
+          <span className="hidden sm:inline">•</span>
+          <span className="flex items-center gap-1.5">
+            <Info className="w-3.5 h-3.5 text-zinc-700" />
+            Runs offline with backup date-seeded archives if PoetryDB is unreachable
+          </span>
+        </footer>
       </div>
     </div>
   );
