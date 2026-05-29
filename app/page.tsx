@@ -1,10 +1,9 @@
 "use client";
 
-import { act, startTransition, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import AnalogClock from "@/components/analog-clock";
 import { cn } from "@/lib/utils";
-import { Clock, Info, Volume2 } from "lucide-react";
-import Image from "next/image";
+import { Info, Volume2 } from "lucide-react";
 import { MorsePulse, textToMorsePulse, wpmToUnitMs } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { MorseAudioEngine } from "@/lib/audio-engine";
@@ -254,6 +253,18 @@ export default function Home() {
         >
           <AnalogClock isStuttering={isStuttering} activePulse={null} />
         </div>
+
+        {activeLine && (
+          <div className="w-full max-w-xl flex items-center justify-between gap-4 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-950/40 backdrop-blur-sm font-mono text-xs text-zinc-400">
+            <div className="flex items-center gap-2 truncate">
+              <span className="text-zinc-600 uppercase">Hourly Line:</span>
+              <span className="italic text-zinc-300 truncate">"{activeLine}"</span>
+              </div>
+              <button className="" onClick={shuffleLine}>
+                Shuffle
+              </button>
+              </div>
+        )}
 
         <ClockHud
           isStuttering={isStuttering}
