@@ -160,14 +160,16 @@ export default function AnalogClock({
             TEMPUS ET POESIS
           </text>
 
-          <text
-            x="180"
-            y="260"
-            className="fill-zinc-500 font-mono text-[12px] tracking-wider"
-            textAnchor="middle"
-          >
-            {digitalTimeStr}
-          </text>
+          {!isStuttering && (
+            <text
+              x="180"
+              y="260"
+              className="fill-zinc-500 font-mono text-[12px] tracking-wider"
+              textAnchor="middle"
+            >
+              {digitalTimeStr}
+            </text>
+          )}
 
           {isStuttering && activePulse?.active && (
             <circle

@@ -1,19 +1,221 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { act, startTransition, useEffect, useRef, useState } from "react";
 import AnalogClock from "@/components/analog-clock";
 import { cn } from "@/lib/utils";
 import { Clock, Info, Volume2 } from "lucide-react";
 import Image from "next/image";
+import { MorsePulse, textToMorsePulse, wpmToUnitMs } from "@/lib/morse";
+import { Poem } from "@/lib/poem-fallback";
+import { MorseAudioEngine } from "@/lib/audio-engine";
+import ClockHud from "@/components/clock-hud";
 
 export default function Home() {
-  const isStuttering = false;
+  const [wpm, setWpm] = useState(20);
+  const [volume, setVolume] = useState(0.4);
+  const [pitch, setPitch] = useState(650);
   const [isMuted, setIsMuted] = useState(true);
+
+  const [isStuttering, setIsStuttering] = useState(false);
+  const [activePulse, setActivePulse] = useState<MorsePulse | null>(null);
+
+  const [poem, setPoem] = useState<Poem | null>(null);
+  const [poemSource, setPoemSource] = useState("");
+  const [activeLine, setActiveLine] = useState("");
+
+  const [decodedText, setDecodedText] = useState("");
+  const [morseFeed, setMorseFeed] = useState<string[]>([]);
+
+  const audioEngineRef = useRef<MorseAudioEngine | null>(null);
+  const playTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const abortControllerRef = useRef<boolean>(false);
+  const currentPulseIndexRef = useRef<number>(0);
+  const lastCharIndexRef = useRef<number>(-1);
+  const lastTriggereHourRef = useRef<number>(-1);
+
+  useEffect(() => {
+    audioEngineRef.current = new MorseAudioEngine();
+    audioEngineRef.current.setVolume(isMuted ? 0 : volume);
+    audioEngineRef.current.setPitch(pitch);
+
+    return () => {
+      if (audioEngineRef.current) {
+        audioEngineRef.current.cleanup();
+      }
+      if (playTimeoutRef.current) {
+        clearTimeout(playTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (audioEngineRef.current) {
+      audioEngineRef.current.setVolume(isMuted ? 0 : volume);
+    }
+  }, [volume, isMuted]);
+
+  useEffect(() => {
+    if (audioEngineRef.current) {
+      audioEngineRef.current.setPitch(pitch);
+    }
+  }, [pitch]);
+
+  //fetch daily poem
+  useEffect(() => {
+    async function fetchDailyPoem() {
+      try {
+        const res = await fetch("/api/poem");
+        if (!res.ok) throw new Error("Couldn't fetch poem");
+        const data = await res.json();
+
+        if (data.poem && data.poem.lines && data.poem.lines.length > 0) {
+          setPoem(data.poem);
+          setPoemSource(data.source);
+
+          const currentHour = new Date().getHours();
+          const lineIndex = currentHour % data.poem.lines.length;
+          setActiveLine(data.poem.lines[lineIndex]);
+        }
+      } catch (err) {
+        console.error("Error loading daily poem:", err);
+      }
+    }
+
+    fetchDailyPoem();
+  }, []);
+
+  useEffect(() => {
+    const hourlyTrigger = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
+
+      if (currentMinute === 0 && lastTriggereHourRef.current !== currentHour) {
+        lastTriggereHourRef.current = currentHour;
+
+        if (poem && poem.lines.length > 0) {
+          const lineIndex = currentHour % poem.lines.length;
+          const newLine = poem.lines[lineIndex];
+          setActiveLine(newLine);
+
+          setTimeout(() => {
+            startTransmission(newLine);
+          }, 1000);
+        }
+      }
+    };
+
+    const interval = setInterval(hourlyTrigger, 1000);
+    return () => clearInterval(interval);
+  }, [poem]);
+
+  const startTransmission = (text: string) => {
+    if (!text) return;
+
+    stopTransmission();
+
+    const pulses = textToMorsePulse(text);
+    if (pulses.length === 0) return;
+
+    setIsStuttering(true);
+    setDecodedText("");
+    setMorseFeed([]);
+
+    abortControllerRef.current = false;
+    currentPulseIndexRef.current = 0;
+    lastCharIndexRef.current = -1;
+
+    if (isMuted) {
+      if (audioEngineRef.current) {
+        audioEngineRef.current
+          .startTone()
+          .then(() => {
+            if (audioEngineRef.current) audioEngineRef.current.stopTone();
+          })
+          .catch(() => {});
+      }
+    }
+
+    const playNext = () => {
+      if (abortControllerRef.current) {
+        cleanupPlayback();
+        return;
+      }
+
+      if (currentPulseIndexRef.current >= pulses.length) {
+        cleanupPlayback();
+        return;
+      }
+
+      const pulse = pulses[currentPulseIndexRef.current];
+      setActivePulse(pulse);
+
+      if (pulse.active) {
+        audioEngineRef.current?.startTone();
+      } else {
+        audioEngineRef.current?.stopTone();
+      }
+
+      if (pulse.charIndex !== lastCharIndexRef.current) {
+        lastCharIndexRef.current = pulse.charIndex;
+
+        if (pulse.char === "") {
+          setDecodedText((prev) => prev + " ");
+          setMorseFeed((prev) => [...prev, "/"]);
+        } else {
+          setDecodedText((prev) => prev + pulse.char);
+          setMorseFeed((prev) => [
+            ...prev,
+            `${pulse.char}(${pulse.rawMorseChar})`,
+          ]);
+        }
+      }
+
+      const unitMs = wpmToUnitMs(wpm);
+      const duration = pulse.durationUnits * unitMs;
+
+      currentPulseIndexRef.current++;
+      playTimeoutRef.current = setTimeout(playNext, duration);
+    };
+
+    playNext();
+  };
+
+  const stopTransmission = () => {
+    abortControllerRef.current = true;
+    if (playTimeoutRef.current) {
+      clearTimeout(playTimeoutRef.current);
+    }
+    cleanupPlayback();
+  };
+
+  const cleanupPlayback = () => {
+    setIsStuttering(false);
+    setActivePulse(null);
+    if (audioEngineRef.current) {
+      audioEngineRef.current.stopTone();
+    }
+  };
+
+  const shuffleLine = () => {
+    if (!poem || poem.lines.length <= 1) return;
+
+    let newLine = activeLine;
+    while (newLine === activeLine) {
+      const idx = Math.floor(Math.random() * poem.lines.length);
+      newLine = poem.lines[idx];
+    }
+
+    setActiveLine(newLine);
+
+    if (isStuttering) {
+      startTransmission(newLine);
+    }
+  };
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-4 md:p-8 relative bg-grid-glow">
       <div className="w-full max-w-4xl flex flex-col items-center gap-6 z-10">
         <header className="text-center flex flex-col items-center gap-2 max-w-xl">
-
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
             Tempus &amp; Poesis
           </h1>
@@ -53,12 +255,33 @@ export default function Home() {
           <AnalogClock isStuttering={isStuttering} activePulse={null} />
         </div>
 
+        <ClockHud
+          isStuttering={isStuttering}
+          activePulse={activePulse}
+          wpm={wpm}
+          setWpm={setWpm}
+          volume={volume}
+          setVolume={setVolume}
+          pitch={pitch}
+          setPitch={setPitch}
+          isMuted={isMuted}
+          setIsMuted={setIsMuted}
+          activeLine={activeLine}
+          decodedText={decodedText}
+          morseFeed={morseFeed}
+          poem={poem}
+          poemSource={poemSource}
+          triggerTransmission={() => startTransmission(activeLine)}
+          stopTransmission={stopTransmission}
+        />
+
         <footer className="text-center text-[10px] font-mono text-zinc-600 flex flex-col sm:flex-row items-center gap-1.5 sm:gap-4">
           <span>© 2026 Tempus &amp; Poesis</span>
           <span className="hidden sm:inline">•</span>
           <span className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5 text-zinc-700" />
-            Runs offline with backup date-seeded archives if PoetryDB is unreachable
+            Runs offline with backup date-seeded archives if PoetryDB is
+            unreachable
           </span>
         </footer>
       </div>

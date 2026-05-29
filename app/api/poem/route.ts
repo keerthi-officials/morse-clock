@@ -16,7 +16,7 @@ export async function GET() {
       throw new Error(`PoetryDB returned status ${response.status}`);
     }
 
-    const data = response.json();
+    const data = await response.json();
 
     if (
       Array.isArray(data) &&
