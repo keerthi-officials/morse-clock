@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Morse Clock",
-  description: "An Analog clock that stutters hourly to trasmit classic poetry in Morse code.",
+  description:
+    "An Analog clock that stutters hourly to trasmit classic poetry in Morse code.",
 };
 
 export default function RootLayout({
@@ -26,9 +27,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable)}
+      className={cn(
+        "h-full",
+        "antialiased",
+        geistSans.variable,
+        geistMono.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col bg-[#070709] text-[#F4F4F5]">{children}</body>
+      <body className="min-h-full flex flex-col bg-[#070709] text-[#F4F4F5]">
+        {children}
+      </body>
     </html>
   );
 }

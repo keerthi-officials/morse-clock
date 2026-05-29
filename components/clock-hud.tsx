@@ -4,7 +4,7 @@ import { MorsePulse } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { cn } from "@/lib/utils";
 import { HelpCircle, Settings, Volume2, VolumeX } from "lucide-react";
-import { use, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ClockHudProps {
   isStuttering: boolean;

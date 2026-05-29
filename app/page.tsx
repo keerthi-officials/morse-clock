@@ -258,12 +258,14 @@ export default function Home() {
           <div className="w-full max-w-xl flex items-center justify-between gap-4 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-950/40 backdrop-blur-sm font-mono text-xs text-zinc-400">
             <div className="flex items-center gap-2 truncate">
               <span className="text-zinc-600 uppercase">Hourly Line:</span>
-              <span className="italic text-zinc-300 truncate">"{activeLine}"</span>
-              </div>
-              <button className="" onClick={shuffleLine}>
-                Shuffle
-              </button>
-              </div>
+              <span className="italic text-zinc-300 truncate">
+                &quot;{activeLine}&quot;
+              </span>
+            </div>
+            <button className="" onClick={shuffleLine}>
+              Shuffle
+            </button>
+          </div>
         )}
 
         <ClockHud
