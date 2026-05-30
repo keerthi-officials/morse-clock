@@ -3,11 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import AnalogClock from "@/components/analog-clock";
 import { cn } from "@/lib/utils";
-import { Info, Volume2 } from "lucide-react";
+import { Info, Shuffle, Volume2 } from "lucide-react";
 import { MorsePulse, textToMorsePulse, wpmToUnitMs } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { MorseAudioEngine } from "@/lib/audio-engine";
 import ClockHud from "@/components/clock-hud";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [wpm, setWpm] = useState(20);
@@ -234,12 +235,13 @@ export default function Home() {
                 Audio is muted by default. Unmute to hear the Morse audio.
               </span>
             </div>
-            <button
-              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold transition-colors"
+            <Button
               onClick={() => setIsMuted(false)}
+              className="bg-amber-500 hover:bg-amber-600 text-zinc-950 text-md"
+              size="sm"
             >
               Unmute
-            </button>
+            </Button>
           </div>
         )}
 
@@ -262,9 +264,11 @@ export default function Home() {
                 &quot;{activeLine}&quot;
               </span>
             </div>
-            <button className="" onClick={shuffleLine}>
+
+            <Button onClick={shuffleLine} className="text-md">
               Shuffle
-            </button>
+              <Shuffle className="w-1 h-1" />
+            </Button>
           </div>
         )}
 
