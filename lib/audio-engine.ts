@@ -12,7 +12,10 @@ export class MorseAudioEngine {
     if (this.audioCtx) return;
 
     const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
+      window.AudioContext ||
+      (window as { webkitAudioContext?: typeof AudioContext })
+        .webkitAudioContext;
+
     if (!AudioContextClass) {
       console.warn("Web Audio API is not supported in this browser.");
       return;
@@ -68,7 +71,6 @@ export class MorseAudioEngine {
       const now = this.audioCtx.currentTime;
       this.gainNode.gain.cancelScheduledValues(now);
       this.gainNode.gain.setValueAtTime(0, now);
-
       this.gainNode.gain.linearRampToValueAtTime(this.volume, now + 0.007);
 
       this.isPlaying = true;
@@ -93,8 +95,8 @@ export class MorseAudioEngine {
             currentOsc.stop();
             currentOsc.disconnect();
           }
-        } catch (e) {
-          //Ignore if already stopped
+        } catch {
+          // ignore if already stopped
         }
       }, 20);
 

@@ -49,9 +49,9 @@ export const MORSE_DICTIONARY: Record<string, string> = {
   "=": "-...-",
   "+": ".-.-.",
   "-": "-....-",
-  "_": "..--.-",
-"\"": ".-..-.",
-"$": "...-..-",
+  _: "..--.-",
+  '"': ".-..-.",
+  $: "...-..-",
   "@": ".--.-.",
 };
 
@@ -110,16 +110,16 @@ export function textToMorsePulses(text: string): MorsePulse[] {
         charIndex: i,
       });
 
-if (j < morseCode.length - 1) {
-  pulses.push({
-    active: false,
-    durationUnits: 1,
-    type: "element-space",
-    char: normalized[i].toUpperCase(),
-    rawMorseChar: morseCode,
-    charIndex: i,
-  });
-}
+      if (j < morseCode.length - 1) {
+        pulses.push({
+          active: false,
+          durationUnits: 1,
+          type: "element-space",
+          char: normalized[i].toUpperCase(),
+          rawMorseChar: morseCode,
+          charIndex: i,
+        });
+      }
     }
 
     if (i < normalized.length - 1) {

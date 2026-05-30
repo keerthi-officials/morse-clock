@@ -105,11 +105,7 @@ const ModalContent = ({ className, children, ...props }: ModalProps) => {
     </DialogContent>
   );
 };
-const ModalDescription = ({
-  className,
-  children,
-  ...props
-}: ModalProps) => {
+const ModalDescription = ({ className, children, ...props }: ModalProps) => {
   const { isMobile } = useModalContext();
   const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
 

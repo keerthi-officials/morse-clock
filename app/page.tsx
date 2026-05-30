@@ -46,6 +46,7 @@ export default function Home() {
         clearTimeout(playTimeoutRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -84,30 +85,21 @@ export default function Home() {
     fetchDailyPoem();
   }, []);
 
-  useEffect(() => {
-    const hourlyTrigger = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      const currentMinute = now.getMinutes();
+  const cleanupPlayback = () => {
+    setIsStuttering(false);
+    setActivePulse(null);
+    if (audioEngineRef.current) {
+      audioEngineRef.current.stopTone();
+    }
+  };
 
-      if (currentMinute === 0 && lastTriggeredHourRef.current !== currentHour) {
-        lastTriggeredHourRef.current = currentHour;
-
-        if (poem && poem.lines.length > 0) {
-          const lineIndex = currentHour % poem.lines.length;
-          const newLine = poem.lines[lineIndex];
-          setActiveLine(newLine);
-
-          setTimeout(() => {
-            startTransmission(newLine);
-          }, 1000);
-        }
-      }
-    };
-
-    const interval = setInterval(hourlyTrigger, 1000);
-    return () => clearInterval(interval);
-  }, [poem]);
+  const stopTransmission = () => {
+    abortControllerRef.current = true;
+    if (playTimeoutRef.current) {
+      clearTimeout(playTimeoutRef.current);
+    }
+    cleanupPlayback();
+  };
 
   const startTransmission = (text: string) => {
     if (!text) return;
@@ -181,21 +173,31 @@ export default function Home() {
     playNext();
   };
 
-  const stopTransmission = () => {
-    abortControllerRef.current = true;
-    if (playTimeoutRef.current) {
-      clearTimeout(playTimeoutRef.current);
-    }
-    cleanupPlayback();
-  };
+  useEffect(() => {
+    const hourlyTrigger = () => {
+      const now = new Date();
+      const currentHour = now.getHours();
+      const currentMinute = now.getMinutes();
 
-  const cleanupPlayback = () => {
-    setIsStuttering(false);
-    setActivePulse(null);
-    if (audioEngineRef.current) {
-      audioEngineRef.current.stopTone();
-    }
-  };
+      if (currentMinute === 0 && lastTriggeredHourRef.current !== currentHour) {
+        lastTriggeredHourRef.current = currentHour;
+
+        if (poem && poem.lines.length > 0) {
+          const lineIndex = currentHour % poem.lines.length;
+          const newLine = poem.lines[lineIndex];
+          setActiveLine(newLine);
+
+          setTimeout(() => {
+            startTransmission(newLine);
+          }, 1000);
+        }
+      }
+    };
+
+    const interval = setInterval(hourlyTrigger, 1000);
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poem]);
 
   const shuffleLine = () => {
     if (!poem || poem.lines.length <= 1) return;

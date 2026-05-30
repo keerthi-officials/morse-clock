@@ -1,12 +1,27 @@
 "use client";
 
-import { MorsePulse } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { cn } from "@/lib/utils";
-import { HelpCircle, Music, Play, Settings, Square, Volume2, VolumeX, X } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  HelpCircle,
+  Music,
+  Play,
+  Settings,
+  Square,
+  Volume2,
+  VolumeX,
+  X,
+} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { Modal, ModalClose, ModalContent, ModalTitle, ModalTrigger } from "./ui/modal";
-import { DialogClose } from "./ui/dialog";
+import {
+  Modal,
+  ModalClose,
+  ModalContent,
+  ModalTitle,
+  ModalTrigger,
+} from "./ui/modal";
 import { Button } from "./ui/button";
 
 interface ClockHudProps {
@@ -150,11 +165,94 @@ export default function ClockHud({
         </div>
 
         <div className="border-t border-zinc-800/80 px-4 py-3 flex items-center gap-3 bg-zinc-900/10">
-        {!isStuttering ? (
-      <Button onClick={triggerTransmission} className="text-md"><Play className="w-4 h-4"/>Transmit Line</Button>  
-      ) : (
-          <Button onClick={stopTransmission} variant="destructive"><Square className="w-4 h-4 fill-red-400"/>Abort Feed</Button>
-        )}</div>
+          {!isStuttering ? (
+            <Button onClick={triggerTransmission} className="text-md">
+              <Play className="w-4 h-4" />
+              Transmit Line
+            </Button>
+          ) : (
+            <Button
+              onClick={stopTransmission}
+              variant="destructive"
+              className="text-md"
+            >
+              <Square className="w-4 h-4 fill-red-400" />
+              Abort Feed
+            </Button>
+          )}
+
+          <Modal>
+            <ModalTrigger asChild>
+              <Button className="text-md">
+                <BookOpen className="w-4 h-4" />
+                Today&apos;s Poem
+              </Button>
+            </ModalTrigger>
+            <ModalContent className="bg-zinc-900">
+              <ModalTitle className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className=" text-zinc-100 flex items-center gap-2 text-lg">
+                    <BookOpen className="w-5 h-5 text-amber-500" />
+                    Poem of the day
+                  </div>
+
+                  <ModalClose asChild>
+                    <Button size="icon" className="hover:bg-zinc-950">
+                      <X />
+                    </Button>
+                  </ModalClose>
+                </div>{" "}
+                <p className="text-zinc-400 text-[10px]">
+                  Source:{" "}
+                  {poemSource === "poetrydb"
+                    ? "PoetryDB Cached Fetch"
+                    : "Local Archive"}
+                </p>
+              </ModalTitle>
+
+              <div className="p-4 flex-1 overflow-y-scroll max-h-125 scrollbar-thin scrollbar-thumb-zinc-800">
+                {poem ? (
+                  <>
+                    <h2 className="font-serif text-[22px] font-normal text-zinc-100 leading-snug mb-1">
+                      {poem.title}
+                    </h2>
+                    <p className="font-serif italic text-sm text-zinc-400 mb-5">
+                      by {poem.author}
+                    </p>
+
+                    <div className="w-8 h-0.5 bg-linear-to-r from-amber-600 to-amber-600/10 mb-5 rounded-full" />
+
+                    <article className="font-serif text-[14.5px] leading-8 text-zinc-300 select-text">
+                      {poem.lines.map((line, idx) =>
+                        line === "" ? (
+                          <div key={idx} className="h-3" />
+                        ) : (
+                          <p key={idx} className="leading-8">
+                            {line}
+                          </p>
+                        ),
+                      )}
+                    </article>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-center py-16 font-mono text-sm text-zinc-600">
+                    Loading poem archive...
+                  </div>
+                )}
+              </div>
+
+              <div className="px-6 py-3.5 border-t border-zinc-800 flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-[12px] text-zinc-600">
+                  <Clock className="w-3.5 h-3.5" />
+                  Next poem in{" "}
+                  <span className="text-zinc-400 font-serif italic">
+                    {countdown}
+                  </span>
+                </span>
+              </div>
+            </ModalContent>
+          </Modal>
+        </div>
       </div>
       <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md p-5 justify-between shadow-lg">
         <div>
@@ -258,136 +356,135 @@ export default function ClockHud({
                   </ModalClose>
                 </div>
               </ModalTitle>
-                <div className="p-6 grid grid-cols-2 gap-4 font-mono text-xs text-zinc-400 overflow-y-auto">
-                  <div className="space-y-1.5 border-r border-zinc-800/50 pr-4">
-                    <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
-                      <span>Letter</span>
-                      <span>Signal</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>A</span>
-                      <span>● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>B</span>
-                      <span>▬ ● ● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>C</span>
-                      <span>▬ ● ▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>D</span>
-                      <span>▬ ● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>E</span>
-                      <span>●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>F</span>
-                      <span>● ● ▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>G</span>
-                      <span>▬ ▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>H</span>
-                      <span>● ● ● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>I</span>
-                      <span>● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>J</span>
-                      <span>● ▬ ▬ ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>K</span>
-                      <span>▬ ● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>L</span>
-                      <span>● ▬ ● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>M</span>
-                      <span>▬ ▬</span>
-                    </div>
+              <div className="p-6 grid grid-cols-2 gap-4 font-mono text-xs text-zinc-400 overflow-y-auto">
+                <div className="space-y-1.5 border-r border-zinc-800/50 pr-4">
+                  <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
+                    <span>Letter</span>
+                    <span>Signal</span>
                   </div>
-
-                  <div className="space-y-1.5">
-                    <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
-                      <span>Letter</span>
-                      <span>Signal</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>N</span>
-                      <span>▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>O</span>
-                      <span>▬ ▬ ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>P</span>
-                      <span>● ▬ ▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Q</span>
-                      <span>▬ ▬ ● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>R</span>
-                      <span>● ▬ ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>S</span>
-                      <span>● ● ●</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>T</span>
-                      <span>▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>U</span>
-                      <span>● ● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>V</span>
-                      <span>● ● ● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>W</span>
-                      <span>● ▬ ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>X</span>
-                      <span>▬ ● ● ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Y</span>
-                      <span>▬ ● ▬ ▬</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Z</span>
-                      <span>▬ ▬ ● ●</span>
-                    </div>
+                  <div className="flex justify-between">
+                    <span>A</span>
+                    <span>● ▬</span>
                   </div>
-
-                  <div className="col-span-2 mt-4 pt-4 border-t border-zinc-800 text-[10px] space-y-1">
-                    <p className="text-zinc-500 uppercase font-bold mb-1">
-                      Standard Timing Rules:
-                    </p>
-                    <p>● Dot duration = 1 Unit</p>
-                    <p>▬ Dash duration = 3 Units (3x longer than dot)</p>
-                    <p>◌ Letter space = 3 Units silence</p>
-                    <p>◌ Word space = 7 Units silence</p>
+                  <div className="flex justify-between">
+                    <span>B</span>
+                    <span>▬ ● ● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>C</span>
+                    <span>▬ ● ▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>D</span>
+                    <span>▬ ● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>E</span>
+                    <span>●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>F</span>
+                    <span>● ● ▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>G</span>
+                    <span>▬ ▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>H</span>
+                    <span>● ● ● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>I</span>
+                    <span>● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>J</span>
+                    <span>● ▬ ▬ ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>K</span>
+                    <span>▬ ● ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>L</span>
+                    <span>● ▬ ● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>M</span>
+                    <span>▬ ▬</span>
                   </div>
                 </div>
-              
+
+                <div className="space-y-1.5">
+                  <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
+                    <span>Letter</span>
+                    <span>Signal</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>N</span>
+                    <span>▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>O</span>
+                    <span>▬ ▬ ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>P</span>
+                    <span>● ▬ ▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Q</span>
+                    <span>▬ ▬ ● ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>R</span>
+                    <span>● ▬ ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>S</span>
+                    <span>● ● ●</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>T</span>
+                    <span>▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>U</span>
+                    <span>● ● ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>V</span>
+                    <span>● ● ● ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>W</span>
+                    <span>● ▬ ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>X</span>
+                    <span>▬ ● ● ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Y</span>
+                    <span>▬ ● ▬ ▬</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Z</span>
+                    <span>▬ ▬ ● ●</span>
+                  </div>
+                </div>
+
+                <div className="col-span-2 mt-4 pt-4 border-t border-zinc-800 text-[10px] space-y-1">
+                  <p className="text-zinc-500 uppercase font-bold mb-1">
+                    Standard Timing Rules:
+                  </p>
+                  <p>● Dot duration = 1 Unit</p>
+                  <p>▬ Dash duration = 3 Units (3x longer than dot)</p>
+                  <p>◌ Letter space = 3 Units silence</p>
+                  <p>◌ Word space = 7 Units silence</p>
+                </div>
+              </div>
             </ModalContent>
           </Modal>
           <button className=" hover:text-zinc-300 transition-colors"></button>

@@ -13,18 +13,16 @@ export default function AnalogClock({
   activePulse,
 }: AnalogClockProps) {
   const [time, setTime] = useState<Date | null>(null);
+  const [hourAngle, setHourAngle] = useState(0);
+  const [minuteAngle, setMinuteAngle] = useState(0);
+  const [secondAngle, setSecondAngle] = useState(0);
 
   const requestRef = useRef<number | null>(null);
   const secondAngleRef = useRef<number>(0);
-  const minuteAngleRef = useRef<number>(0);
-  const hourAngleRef = useRef<number>(0);
 
   useEffect(() => {
-    setTime(new Date());
-
     const animate = () => {
       const now = new Date();
-      setTime(now);
 
       const ms = now.getMilliseconds();
       const sec = now.getSeconds();
@@ -35,13 +33,10 @@ export default function AnalogClock({
       const naturalMinuteAngle = min * 6 + sec / 10; // 0.1 deg per sec
       const naturalHourAngle = (hr % 12) * 30 + min / 2; // 0.5 deg per min
 
-      hourAngleRef.current = naturalHourAngle;
-      minuteAngleRef.current = naturalMinuteAngle;
-
       let targetOffset = 0;
       let jitter = 0;
 
-      if (isStuttering && activePulse && activePulse.active) {
+      if (isStuttering && activePulse?.active) {
         targetOffset = activePulse.type === "dot" ? 6 : 14;
         jitter = Math.sin(Date.now() * 0.08) * 1.5;
       }
@@ -49,11 +44,15 @@ export default function AnalogClock({
       const targetSecondAngle = naturalSecondAngle + targetOffset + jitter;
 
       let diff = targetSecondAngle - (secondAngleRef.current % 360);
-
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
       secondAngleRef.current += diff * 0.22;
+
+      setTime(now);
+      setHourAngle(naturalHourAngle);
+      setMinuteAngle(naturalMinuteAngle);
+      setSecondAngle(secondAngleRef.current);
 
       requestRef.current = requestAnimationFrame(animate);
     };
@@ -61,9 +60,7 @@ export default function AnalogClock({
     requestRef.current = requestAnimationFrame(animate);
 
     return () => {
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-      }
+      if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
   }, [isStuttering, activePulse]);
 
@@ -106,7 +103,11 @@ export default function AnalogClock({
       <div className="absolute inset-0 -m-4 bg-linear-to-b from-amber-500/5 to-transparent rounded-full blur-2xl opacity-60 pointer-events-none" />
 
       <div className="relative w-77.5 h-77.5 sm:w-92.5 sm:h-92.5 rounded-full border border-zinc-800/80 bg-linear-to-b from-zinc-900/60 to-zinc-950/80 backdrop-blur-xl shadow-2xl flex items-center justify-center">
-        <svg viewBox="0 0 360 360" className="w-full h-full p-2">
+        <svg
+          viewBox="0 0 360 360"
+          className="w-full h-full p-2"
+          suppressHydrationWarning
+        >
           <circle
             cx="180"
             cy="180"
@@ -171,7 +172,7 @@ export default function AnalogClock({
             </text>
           )}
 
-          <g transform={`rotate(${hourAngleRef.current} 180 180)`}>
+          <g transform={`rotate(${hourAngle} 180 180)`}>
             <path
               d="M 176,180 L 178,85 L 180,80 L 182, 85 L 184, 180 Z"
               className="fill-zinc-200 shadow-md"
@@ -186,7 +187,7 @@ export default function AnalogClock({
             />
           </g>
 
-          <g transform={`rotate(${minuteAngleRef.current} 180 180)`}>
+          <g transform={`rotate(${minuteAngle} 180 180)`}>
             <path
               d="M 177,180 L 178.5,55 L 180,50 L 181.5,55 L 183, 180 Z"
               className="fill-zinc-400"
@@ -201,7 +202,7 @@ export default function AnalogClock({
             />
           </g>
 
-          <g transform={`rotate(${secondAngleRef.current} 180 180)`}>
+          <g transform={`rotate(${secondAngle} 180 180)`}>
             {isStuttering && activePulse?.active && (
               <line
                 x1="180"
@@ -228,28 +229,26 @@ export default function AnalogClock({
               strokeWidth={isStuttering && activePulse?.active ? "2.5" : "1.5"}
               strokeLinecap="round"
             />
-
             <circle
               cx="180"
               cy="210"
               r="6"
-              className={`${
+              className={
                 isStuttering
                   ? "fill-amber-500/80 stroke-amber-500/40"
                   : "fill-zinc-900 stroke-amber-500"
-              }`}
+              }
               strokeWidth="1.5"
             />
-
             <circle
               cx="180"
               cy="30"
               r="2.5"
-              className={`${
+              className={
                 isStuttering && activePulse?.active
                   ? "fill-white animate-pulse"
                   : "fill-amber-500"
-              }`}
+              }
             />
           </g>
 
