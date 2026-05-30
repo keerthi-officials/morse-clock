@@ -1,7 +1,7 @@
 "use client";
 
 import { MorsePulse } from "@/lib/morse";
-import { act, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface AnalogClockProps {
   isStuttering: boolean;

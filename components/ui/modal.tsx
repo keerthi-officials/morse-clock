@@ -5,16 +5,6 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-  DrawerTrigger,
-} from "./drawer";
-import {
   Dialog,
   DialogClose,
   DialogContent,
@@ -23,7 +13,17 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "./dialog";
+} from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
 
 interface BaseProps {
   children: React.ReactNode;
@@ -56,6 +56,7 @@ const useModalContext = () => {
 const Modal = ({ children, ...props }: RootModalProps) => {
   const isMobile = useIsMobile();
   const Modal = isMobile ? Drawer : Dialog;
+
   return (
     <ModalContext.Provider value={{ isMobile }}>
       <Modal {...props} {...(isMobile && { autoFocus: true })}>
@@ -66,60 +67,76 @@ const Modal = ({ children, ...props }: RootModalProps) => {
 };
 
 const ModalTrigger = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+  const { isMobile } = useModalContext();
   const ModalTrigger = isMobile ? DrawerTrigger : DialogTrigger;
+
   return (
-    <ModalTrigger {...props} className={className}>
+    <ModalTrigger className={className} {...props}>
       {children}
     </ModalTrigger>
   );
 };
 
 const ModalClose = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+  const { isMobile } = useModalContext();
   const ModalClose = isMobile ? DrawerClose : DialogClose;
+
   return (
-    <ModalClose {...props} className={className}>
+    <ModalClose className={className} {...props}>
       {children}
     </ModalClose>
   );
 };
 
 const ModalContent = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
-  const ModalContent = isMobile ? DrawerContent : DialogContent;
+  const { isMobile } = useModalContext();
+
+  if (isMobile) {
+    return (
+      <DrawerContent className={className} {...props}>
+        {children}
+      </DrawerContent>
+    );
+  }
+
   return (
-    <ModalContent {...props} className={className}>
+    <DialogContent showCloseButton={false} className={className} {...props}>
       {children}
-    </ModalContent>
+    </DialogContent>
   );
 };
-
-const ModalDescription = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+const ModalDescription = ({
+  className,
+  children,
+  ...props
+}: ModalProps) => {
+  const { isMobile } = useModalContext();
   const ModalDescription = isMobile ? DrawerDescription : DialogDescription;
+
   return (
-    <ModalDescription {...props} className={className}>
+    <ModalDescription className={className} {...props}>
       {children}
     </ModalDescription>
   );
 };
 
 const ModalHeader = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+  const { isMobile } = useModalContext();
   const ModalHeader = isMobile ? DrawerHeader : DialogHeader;
+
   return (
-    <ModalHeader {...props} className={className}>
+    <ModalHeader className={className} {...props}>
       {children}
     </ModalHeader>
   );
 };
 
 const ModalTitle = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+  const { isMobile } = useModalContext();
   const ModalTitle = isMobile ? DrawerTitle : DialogTitle;
+
   return (
-    <ModalTitle {...props} className={className}>
+    <ModalTitle className={className} {...props}>
       {children}
     </ModalTitle>
   );
@@ -134,10 +151,11 @@ const ModalBody = ({ className, children, ...props }: ModalProps) => {
 };
 
 const ModalFooter = ({ className, children, ...props }: ModalProps) => {
-  const isMobile = useModalContext();
+  const { isMobile } = useModalContext();
   const ModalFooter = isMobile ? DrawerFooter : DialogFooter;
+
   return (
-    <ModalFooter {...props} className={className}>
+    <ModalFooter className={className} {...props}>
       {children}
     </ModalFooter>
   );

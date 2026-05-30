@@ -251,7 +251,7 @@ export default function Home() {
               : "border-zinc-800/60",
           )}
         >
-          <AnalogClock isStuttering={isStuttering} activePulse={null} />
+          <AnalogClock isStuttering={isStuttering} activePulse={activePulse} />
         </div>
 
         {activeLine && (
@@ -270,7 +270,6 @@ export default function Home() {
 
         <ClockHud
           isStuttering={isStuttering}
-          activePulse={activePulse}
           wpm={wpm}
           setWpm={setWpm}
           volume={volume}

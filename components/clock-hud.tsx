@@ -3,12 +3,14 @@
 import { MorsePulse } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { cn } from "@/lib/utils";
-import { HelpCircle, Settings, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, Music, Settings, Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { Modal, ModalClose, ModalContent, ModalTitle, ModalTrigger } from "./ui/modal";
+import { DialogClose } from "./ui/dialog";
+import { Button } from "./ui/button";
 
 interface ClockHudProps {
   isStuttering: boolean;
-  activePulse: MorsePulse | null;
   wpm: number;
   setWpm: (wpm: number) => void;
   volume: number;
@@ -28,7 +30,6 @@ interface ClockHudProps {
 
 export default function ClockHud({
   isStuttering,
-  activePulse,
   wpm,
   setWpm,
   volume,
@@ -45,8 +46,6 @@ export default function ClockHud({
   triggerTransmission,
   stopTransmission,
 }: ClockHudProps) {
-  const [showPoemModal, setShowPoemModal] = useState(false);
-  const [showHelpModal, setShowHelpModal] = useState(false);
   const [countdown, setCountdown] = useState("");
   const terminalEndRef = useRef<HTMLDivElement>(null);
 
@@ -103,8 +102,53 @@ export default function ClockHud({
             </span>
           </div>
         </div>
-      </div>
 
+        <div className="flex-1 p-4 font-mono text-sm overlfow-y-auto max-h-55 flex flex-col gap-2 scrollbar-thin scrollbar-thumb-zinc-800">
+          <div className="text-zinc-600 text-xs">
+            &gt; POEM LINE TRANSMITS AT THE TOP OF EVER HOUR.
+            <br />
+            &gt; CLICK &quot;TRANSMIT LINE&quot; FOR MANUAL OVERRIDE.
+          </div>
+
+          {activeLine && (
+            <div className="border-l-2 border-amber-500/30 pl-3 py-1 my-2 bg-amber-500/5 rounded-r">
+              <span className="text-zinc-500">Target Sequence:</span>
+              <span className="text-zinc-300 italic">
+                &quot;{activeLine}&quot;
+              </span>
+            </div>
+          )}
+
+          {morseFeed.length > 0 ? (
+            <div className="">
+              {morseFeed.map((signal, idx) => (
+                <span
+                  key={idx}
+                  className={cn(
+                    "px-1 py-0.5 rounded text-xs",
+                    idx === morseFeed.length - 1 && isStuttering
+                      ? "text-amber-400 bg-amber-950/40 font-bold border border-amber-500/20"
+                      : "text-zinc-500",
+                  )}
+                >
+                  {signal}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          <div className="mt-auto pt-2">
+            <span className="text-amber-500/90 font-bold">&gt; DECODED:</span>
+            <span className="text-zinc-100 tracking-wide">
+              {decodedText}
+              {isStuttering && (
+                <span className="animate-pulse inline-block w-2 h-4 ml-0.5 bg-amber-500" />
+              )}
+            </span>
+          </div>
+          <div ref={terminalEndRef} />
+        </div>
+      </div>
       <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md p-5 justify-between shadow-lg">
         <div>
           <div className="flex items-center gap-2 border-b border-zinc-900 pb-3 mb-4">
@@ -188,14 +232,159 @@ export default function ClockHud({
         </div>
 
         <div className="border-t border-zinc-900 pt-3 mt-4 flex text-[10px] font-mono justify-between items-center">
-          <button
-            onClick={() => setShowHelpModal(true)}
-            className="flex items-center gap-1 hover:text-zinc-300 transition-colors"
-          >
-            <HelpCircle className="w-3.5 h-3.5" />
-            Morse Key Guide
-          </button>
-          <span className="text-zinc-600">Made by keerthi</span>
+          <Modal>
+            <ModalTrigger className="flex items-center gap-1 cursor-pointer">
+              <HelpCircle className="w-3.5 h-3.5" />
+              Morse Key Guide
+            </ModalTrigger>
+            <ModalContent className="bg-zinc-900">
+              <ModalTitle>
+                <div className="flex items-center justify-between">
+                  <div className=" text-zinc-100 flex items-center gap-2 text-lg">
+                    <Music className="w-5 h-5 text-amber-500" />
+                    International Morse Code
+                  </div>
+                  <ModalClose asChild>
+                    <Button size="icon" className="hover:bg-zinc-950">
+                      <X />
+                    </Button>
+                  </ModalClose>
+                </div>
+              </ModalTitle>
+                <div className="p-6 grid grid-cols-2 gap-4 font-mono text-xs text-zinc-400 overflow-y-auto">
+                  <div className="space-y-1.5 border-r border-zinc-800/50 pr-4">
+                    <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
+                      <span>Letter</span>
+                      <span>Signal</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>A</span>
+                      <span>● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>B</span>
+                      <span>▬ ● ● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>C</span>
+                      <span>▬ ● ▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>D</span>
+                      <span>▬ ● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>E</span>
+                      <span>●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>F</span>
+                      <span>● ● ▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>G</span>
+                      <span>▬ ▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>H</span>
+                      <span>● ● ● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>I</span>
+                      <span>● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>J</span>
+                      <span>● ▬ ▬ ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>K</span>
+                      <span>▬ ● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>L</span>
+                      <span>● ▬ ● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>M</span>
+                      <span>▬ ▬</span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between border-b border-zinc-800 pb-1 text-zinc-300 font-bold">
+                      <span>Letter</span>
+                      <span>Signal</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>N</span>
+                      <span>▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>O</span>
+                      <span>▬ ▬ ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>P</span>
+                      <span>● ▬ ▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Q</span>
+                      <span>▬ ▬ ● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>R</span>
+                      <span>● ▬ ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>S</span>
+                      <span>● ● ●</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>T</span>
+                      <span>▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>U</span>
+                      <span>● ● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>V</span>
+                      <span>● ● ● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>W</span>
+                      <span>● ▬ ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>X</span>
+                      <span>▬ ● ● ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Y</span>
+                      <span>▬ ● ▬ ▬</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Z</span>
+                      <span>▬ ▬ ● ●</span>
+                    </div>
+                  </div>
+
+                  <div className="col-span-2 mt-4 pt-4 border-t border-zinc-800 text-[10px] space-y-1">
+                    <p className="text-zinc-500 uppercase font-bold mb-1">
+                      Standard Timing Rules:
+                    </p>
+                    <p>● Dot duration = 1 Unit</p>
+                    <p>▬ Dash duration = 3 Units (3x longer than dot)</p>
+                    <p>◌ Letter space = 3 Units silence</p>
+                    <p>◌ Word space = 7 Units silence</p>
+                  </div>
+                </div>
+              
+            </ModalContent>
+          </Modal>
+          <button className=" hover:text-zinc-300 transition-colors"></button>
+          <span className="text-zinc-600">made by keerthi</span>
         </div>
       </div>
     </div>
