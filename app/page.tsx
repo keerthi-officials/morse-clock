@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import AnalogClock from "@/components/analog-clock";
 import { cn } from "@/lib/utils";
 import { Info, Shuffle, Volume2 } from "lucide-react";
-import { MorsePulse, textToMorsePulse, wpmToUnitMs } from "@/lib/morse";
+import { MorsePulse, textToMorsePulses, wpmToUnitMs } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { MorseAudioEngine } from "@/lib/audio-engine";
 import ClockHud from "@/components/clock-hud";
@@ -31,7 +31,7 @@ export default function Home() {
   const abortControllerRef = useRef<boolean>(false);
   const currentPulseIndexRef = useRef<number>(0);
   const lastCharIndexRef = useRef<number>(-1);
-  const lastTriggereHourRef = useRef<number>(-1);
+  const lastTriggeredHourRef = useRef<number>(-1);
 
   useEffect(() => {
     audioEngineRef.current = new MorseAudioEngine();
@@ -90,8 +90,8 @@ export default function Home() {
       const currentHour = now.getHours();
       const currentMinute = now.getMinutes();
 
-      if (currentMinute === 0 && lastTriggereHourRef.current !== currentHour) {
-        lastTriggereHourRef.current = currentHour;
+      if (currentMinute === 0 && lastTriggeredHourRef.current !== currentHour) {
+        lastTriggeredHourRef.current = currentHour;
 
         if (poem && poem.lines.length > 0) {
           const lineIndex = currentHour % poem.lines.length;
@@ -114,7 +114,7 @@ export default function Home() {
 
     stopTransmission();
 
-    const pulses = textToMorsePulse(text);
+    const pulses = textToMorsePulses(text);
     if (pulses.length === 0) return;
 
     setIsStuttering(true);
@@ -159,7 +159,7 @@ export default function Home() {
       if (pulse.charIndex !== lastCharIndexRef.current) {
         lastCharIndexRef.current = pulse.charIndex;
 
-        if (pulse.char === "") {
+        if (pulse.char === " ") {
           setDecodedText((prev) => prev + " ");
           setMorseFeed((prev) => [...prev, "/"]);
         } else {
@@ -213,7 +213,7 @@ export default function Home() {
     }
   };
   return (
-    <div className="flex flex-1 flex-col items-center justify-center p-4 md:p-8 relative bg-grid-glow">
+    <main className="flex flex-1 flex-col items-center justify-center p-4 md:p-8 relative bg-grid-glow">
       <div className="w-full max-w-4xl flex flex-col items-center gap-6 z-10">
         <header className="text-center flex flex-col items-center gap-2 max-w-xl">
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight bg-linear-to-r from-zinc-100 to-zinc-400 bg-clip-text text-transparent">
@@ -301,6 +301,6 @@ export default function Home() {
           </span>
         </footer>
       </div>
-    </div>
+    </main>
   );
 }

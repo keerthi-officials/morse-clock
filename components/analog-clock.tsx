@@ -171,15 +171,6 @@ export default function AnalogClock({
             </text>
           )}
 
-          {isStuttering && activePulse?.active && (
-            <circle
-              cx="180"
-              cy="180"
-              r="24"
-              className="fill-amber-500/10 animate-ping opacity-60"
-            />
-          )}
-
           <g transform={`rotate(${hourAngleRef.current} 180 180)`}>
             <path
               d="M 176,180 L 178,85 L 180,80 L 182, 85 L 184, 180 Z"

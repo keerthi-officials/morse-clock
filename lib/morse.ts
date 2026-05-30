@@ -49,9 +49,9 @@ export const MORSE_DICTIONARY: Record<string, string> = {
   "=": "-...-",
   "+": ".-.-.",
   "-": "-....-",
-  _: "..--.-",
-  '"': ".-..-.",
-  $: "...-..-",
+  "_": "..--.-",
+"\"": ".-..-.",
+"$": "...-..-",
   "@": ".--.-.",
 };
 
@@ -64,7 +64,7 @@ export interface MorsePulse {
   charIndex: number;
 }
 
-export function textToMorsePulse(text: string): MorsePulse[] {
+export function textToMorsePulses(text: string): MorsePulse[] {
   const normalized = text.toLowerCase().trim();
   const pulses: MorsePulse[] = [];
 
@@ -80,10 +80,10 @@ export function textToMorsePulse(text: string): MorsePulse[] {
       }
 
       pulses.push({
-        active: true,
+        active: false,
         durationUnits: 7,
         type: "word-space",
-        char: "",
+        char: " ",
         rawMorseChar: "",
         charIndex: i,
       });
@@ -110,16 +110,16 @@ export function textToMorsePulse(text: string): MorsePulse[] {
         charIndex: i,
       });
 
-      if (j < normalized.length - 1) {
-        pulses.push({
-          active: false,
-          durationUnits: 3,
-          type: "element-space",
-          char: normalized[i].toUpperCase(),
-          rawMorseChar: morseCode,
-          charIndex: i,
-        });
-      }
+if (j < morseCode.length - 1) {
+  pulses.push({
+    active: false,
+    durationUnits: 1,
+    type: "element-space",
+    char: normalized[i].toUpperCase(),
+    rawMorseChar: morseCode,
+    charIndex: i,
+  });
+}
     }
 
     if (i < normalized.length - 1) {

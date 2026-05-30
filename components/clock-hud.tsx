@@ -3,7 +3,7 @@
 import { MorsePulse } from "@/lib/morse";
 import { Poem } from "@/lib/poem-fallback";
 import { cn } from "@/lib/utils";
-import { HelpCircle, Music, Settings, Volume2, VolumeX, X } from "lucide-react";
+import { HelpCircle, Music, Play, Settings, Square, Volume2, VolumeX, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Modal, ModalClose, ModalContent, ModalTitle, ModalTrigger } from "./ui/modal";
 import { DialogClose } from "./ui/dialog";
@@ -103,7 +103,7 @@ export default function ClockHud({
           </div>
         </div>
 
-        <div className="flex-1 p-4 font-mono text-sm overlfow-y-auto max-h-55 flex flex-col gap-2 scrollbar-thin scrollbar-thumb-zinc-800">
+        <div className="flex-1 p-4 font-mono text-sm overflow-y-auto max-h-55 flex flex-col gap-2 scrollbar-thin scrollbar-thumb-zinc-800">
           <div className="text-zinc-600 text-xs">
             &gt; POEM LINE TRANSMITS AT THE TOP OF EVER HOUR.
             <br />
@@ -148,6 +148,13 @@ export default function ClockHud({
           </div>
           <div ref={terminalEndRef} />
         </div>
+
+        <div className="border-t border-zinc-800/80 px-4 py-3 flex items-center gap-3 bg-zinc-900/10">
+        {!isStuttering ? (
+      <Button onClick={triggerTransmission} className="text-md"><Play className="w-4 h-4"/>Transmit Line</Button>  
+      ) : (
+          <Button onClick={stopTransmission} variant="destructive"><Square className="w-4 h-4 fill-red-400"/>Abort Feed</Button>
+        )}</div>
       </div>
       <div className="flex flex-col rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md p-5 justify-between shadow-lg">
         <div>
